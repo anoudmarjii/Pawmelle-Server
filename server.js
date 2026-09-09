@@ -4,6 +4,7 @@ import pgclient from "./db/db.js";
 import serviceRoutes from "./routes/services.js";
 import authRoutes from "./routes/auth.js";
 import petRoutes from "./routes/pets.js";
+import appointmentRoutes from "./routes/appointments.js";
 import session from "express-session";
 
 dotenv.config();
@@ -34,6 +35,7 @@ app.use(
 app.use("/api/services", serviceRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/pets", petRoutes);
+app.use("/api/appointments", appointmentRoutes);
 
 // to test db connection
 pgclient.connect()

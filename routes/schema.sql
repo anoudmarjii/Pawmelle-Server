@@ -51,3 +51,14 @@ VALUES
     12,
     30
 );
+
+
+
+-- create admin account
+INSERT INTO users (name, email, password, role)
+VALUES (
+    'Pawmelle Admin',
+    'admin@pawmelle.com',
+    '$2b$10$b0kdCvpyFfWKuzwbYz7YYeHYs7m33U.90GYvgPSDCsDDJbTa5jt1W',
+    'admin'
+);
