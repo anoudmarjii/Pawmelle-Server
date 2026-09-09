@@ -1,5 +1,7 @@
 import express from "express";
 import pgclient from "../db/db.js";
+import { requireAdmin } from "../middleware/authMiddleware.js"; //for extra auth for roles and login
+
 
 const serviceRoutes = express.Router();
 
@@ -37,7 +39,7 @@ serviceRoutes.get("/:id", async (req, res) => {
 
 // POST new service
 // http://localhost:5000/api/services/
-serviceRoutes.post("/", async (req, res) => {
+serviceRoutes.post("/", requireAdmin, async (req, res) => {
     const { name, description, price, duration_minutes } = req.body;
 
     try {
@@ -59,7 +61,7 @@ serviceRoutes.post("/", async (req, res) => {
 
 // UPDATE service
 // http://localhost:5000/api/services/1
-serviceRoutes.put("/:id", async (req, res) => {
+serviceRoutes.put("/:id", requireAdmin, async (req, res) => {
     const { name, description, price, duration_minutes } = req.body;
     // Gets the new values from the request body.
 
@@ -95,7 +97,7 @@ serviceRoutes.put("/:id", async (req, res) => {
 
 // DELETE service
 // http://localhost:5000/api/services/1
-serviceRoutes.delete("/:id", async (req, res) => {
+serviceRoutes.delete("/:id", requireAdmin, async (req, res) => {
     try {
         const result = await pgclient.query(
             "DELETE FROM services WHERE id = $1 RETURNING *",
