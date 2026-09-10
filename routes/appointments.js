@@ -137,14 +137,44 @@ appointmentRoutes.put("/:id/cancel", requireLogin, async (req, res) => {
 appointmentRoutes.get("/admin/all", requireAdmin, async (req, res) => {
     try {
         const result = await pgclient.query(
-            `SELECT * FROM appointments
-             ORDER BY appointment_date, appointment_time`
+            `SELECT
+                appointments.id,
+                appointments.appointment_date,
+                appointments.appointment_time,
+                appointments.status,
+
+                users.id AS user_id,
+                users.name AS customer_name,
+                users.email AS customer_email,
+
+                pets.id AS pet_id,
+                pets.species AS pet_species,
+                pets.breed AS pet_breed,
+
+                services.id AS service_id,
+                services.name AS service_name,
+                services.price AS service_price
+
+             FROM appointments
+
+             JOIN users
+                ON appointments.user_id = users.id
+
+             JOIN pets
+                ON appointments.pet_id = pets.id
+
+             JOIN services
+                ON appointments.service_id = services.id
+
+             ORDER BY appointments.appointment_date,
+                      appointments.appointment_time`
         );
 
         res.status(200).json(result.rows);
 
     } catch (err) {
         console.error(err);
+
         res.status(500).json({
             error: "Internal server error"
         });

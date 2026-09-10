@@ -37,7 +37,7 @@ app.use(
 // allows the frontend (running on a different port) to make requests to the backend.
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL,
     credentials: true
   })
 );
