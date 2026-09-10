@@ -13,7 +13,7 @@ const userRoutes = express.Router();
 userRoutes.get("/", requireAdmin, async (req, res) => {
     try {
         const result = await pgclient.query(
-            "SELECT id, name, email, role FROM users ORDER BY id"
+            "SELECT id, name, email, phone, role FROM users ORDER BY id"
         );
 
         res.status(200).json(result.rows);
@@ -34,7 +34,7 @@ userRoutes.delete("/:id", requireAdmin, async (req, res) => {
         const result = await pgclient.query(
             `DELETE FROM users
              WHERE id = $1
-             RETURNING id, name, email, role`,
+             RETURNING id, name, email, phone, role`,
             [req.params.id]
         );
 
@@ -61,15 +61,21 @@ userRoutes.delete("/:id", requireAdmin, async (req, res) => {
 // PUT /api/users/profile
 // Allows the logged-in user to update their own profile without choosing a user ID.
 userRoutes.put("/profile", requireLogin, async (req, res) => {
-    const { name, email } = req.body;
+    const { name, email, phone } = req.body || {};
+
+     if (!name || !email || !phone) {
+        return res.status(400).json({
+            message: "Name, email, and phone are required"
+        });
+    }
 
     try {
         const result = await pgclient.query(
             `UPDATE users
-             SET name = $1, email = $2
-             WHERE id = $3
-             RETURNING id, name, email, role`,
-            [name, email, req.session.userId]
+             SET name = $1, email = $2, phone = $3
+             WHERE id = $4
+             RETURNING id, name, email, phone, role`,
+            [name, email, phone, req.session.userId]
         );
 
         if (result.rows.length === 0) {
@@ -85,6 +91,13 @@ userRoutes.put("/profile", requireLogin, async (req, res) => {
 
     } catch (err) {
         console.error(err);
+
+        if (err.code === "23505") {
+            return res.status(400).json({
+                message: "Email is already in use"
+            });
+        }
+
         res.status(500).json({
             error: "Internal server error"
         });
