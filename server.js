@@ -20,6 +20,9 @@ app.use(express.json());
 // for session/cookie
 // secret: The server creates a session ID when the user logs in, signs it using the secret key, and sends it to the browser in a cookie. On later requests, the server verifies the signature to make sure the session ID was not changed or tampered with.
 // it should be placed before app.use belows, and after middleware
+
+app.set("trust proxy", 1);
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,  //protects/signs the session cookie
@@ -27,7 +30,8 @@ app.use(
     saveUninitialized: false, //don't create sessions for visitors who haven't logged in
     cookie: {
       httpOnly: true,  //js in the browser cannot directly access the cookie
-      secure: false,  //needed while using http://localhost
+      secure: process.env.NODE_ENV === "production",  //false while using http://localhost
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000  // 24 hours in milliseconds
     }
   })
