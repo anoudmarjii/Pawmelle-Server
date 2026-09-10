@@ -12,9 +12,31 @@ const appointmentRoutes = express.Router();
 appointmentRoutes.get("/", requireLogin, async (req, res) => {
     try {
         const result = await pgclient.query(
-            `SELECT * FROM appointments
-             WHERE user_id = $1
-             ORDER BY appointment_date, appointment_time`,
+            `SELECT 
+                appointments.id,
+                appointments.appointment_date,
+                appointments.appointment_time,
+                appointments.status,
+
+                pets.id AS pet_id,
+                pets.species AS pet_species,
+
+                services.id AS service_id,
+                services.name AS service_name,
+                services.price AS service_price
+
+             FROM appointments
+
+             JOIN pets
+                ON appointments.pet_id = pets.id
+
+             JOIN services
+                ON appointments.service_id = services.id
+
+             WHERE appointments.user_id = $1
+
+             ORDER BY appointments.appointment_date,
+                      appointments.appointment_time`,
             [req.session.userId]
         );
 
@@ -22,6 +44,7 @@ appointmentRoutes.get("/", requireLogin, async (req, res) => {
 
     } catch (err) {
         console.error(err);
+
         res.status(500).json({
             error: "Internal server error"
         });
