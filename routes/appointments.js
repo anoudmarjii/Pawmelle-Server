@@ -18,9 +18,11 @@ appointmentRoutes.get("/", requireLogin, async (req, res) => {
                 appointments.appointment_time,
                 appointments.status,
 
+                pets.id AS pet_id,
                 pets.species AS pet_species,
                 pets.breed AS pet_breed,
 
+                services.id AS service_id,
                 services.name AS service_name,
                 services.price AS service_price
 
