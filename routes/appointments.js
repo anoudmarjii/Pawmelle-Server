@@ -12,7 +12,7 @@ const appointmentRoutes = express.Router();
 appointmentRoutes.get("/", requireLogin, async (req, res) => {
     try {
         const result = await pgclient.query(
-            `SELECT 
+            `SELECT
                 appointments.id,
                 appointments.appointment_date,
                 appointments.appointment_time,
@@ -20,6 +20,7 @@ appointmentRoutes.get("/", requireLogin, async (req, res) => {
 
                 pets.id AS pet_id,
                 pets.species AS pet_species,
+                pets.breed AS pet_breed,
 
                 services.id AS service_id,
                 services.name AS service_name,
