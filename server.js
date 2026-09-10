@@ -7,6 +7,7 @@ import petRoutes from "./routes/pets.js";
 import appointmentRoutes from "./routes/appointments.js";
 import userRoutes from "./routes/users.js";
 import session from "express-session";
+import cors from "cors";
 
 dotenv.config();
 
@@ -31,6 +32,16 @@ app.use(
     }
   })
 );
+
+// CORS middleware
+// allows the frontend (running on a different port) to make requests to the backend.
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true
+  })
+);
+
 
 // for routes
 app.use("/api/services", serviceRoutes);
