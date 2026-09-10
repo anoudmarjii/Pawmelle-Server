@@ -40,15 +40,15 @@ serviceRoutes.get("/:id", async (req, res) => {
 // POST new service
 // http://localhost:5000/api/services/
 serviceRoutes.post("/", requireAdmin, async (req, res) => {
-    const { name, description, price, duration_minutes } = req.body;
+    const { name, description, price, duration } = req.body;
 
     try {
         const result = await pgclient.query(
             `INSERT INTO services 
-            (name, description, price, duration_minutes)
+            (name, description, price, duration)
             VALUES ($1, $2, $3, $4)
             RETURNING *`,
-            [name, description, price, duration_minutes]
+            [name, description, price, duration]
         );
 
         res.status(200).json(result.rows[0]);
@@ -62,7 +62,7 @@ serviceRoutes.post("/", requireAdmin, async (req, res) => {
 // UPDATE service
 // http://localhost:5000/api/services/1
 serviceRoutes.put("/:id", requireAdmin, async (req, res) => {
-    const { name, description, price, duration_minutes } = req.body;
+    const { name, description, price, duration } = req.body;
     // Gets the new values from the request body.
 
     try {
@@ -71,14 +71,14 @@ serviceRoutes.put("/:id", requireAdmin, async (req, res) => {
             SET name = $1,
                 description = $2,
                 price = $3,
-                duration_minutes = $4
+                duration = $4
             WHERE id = $5
             RETURNING *`,
             [
                 name,
                 description,
                 price,
-                duration_minutes,
+                duration,
                 req.params.id
             ]
         );

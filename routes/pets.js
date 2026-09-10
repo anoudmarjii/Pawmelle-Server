@@ -31,14 +31,20 @@ petRoutes.get("/", requireLogin, async (req, res) => {
 // POST /api/pets
 // Add a new pet for the currently logged-in user
 petRoutes.post("/", requireLogin, async (req, res) => {
-    const { name, species, breed, age } = req.body;
+    const { species, breed, age } = req.body;
+
+    if (!species || age === "" || age === undefined) {
+        return res.status(400).json({
+            message: "Pet type and age are required"
+        });
+    }
 
     try {
         const result = await pgclient.query(
-            `INSERT INTO pets (name, species, breed, age, user_id)
-             VALUES ($1, $2, $3, $4, $5)
+            `INSERT INTO pets (species, breed, age, user_id)
+             VALUES ($1, $2, $3, $4)
              RETURNING *`,
-            [name, species, breed, age, req.session.userId] 
+            [species, breed || null , age, req.session.userId] 
             //request.sess.id > The logged in user automatically becomes the owner
         );
 
@@ -85,21 +91,19 @@ petRoutes.get("/:id", requireLogin, async (req, res) => {
 // Update a pet only if it belongs to the currently logged-in user.
 // id = $5 AND user_id = $6 > only if the user requested the pet ID and belongs to their acc
 petRoutes.put("/:id", requireLogin, async (req, res) => {
-    const { name, species, breed, age } = req.body;
+    const { species, breed, age } = req.body;
 
     try {
         const result = await pgclient.query(
             `UPDATE pets
-             SET name = $1,
-                 species = $2,
-                 breed = $3,
-                 age = $4
-             WHERE id = $5 AND user_id = $6  
+             SET species = $1,
+                 breed = $2,
+                 age = $3
+             WHERE id = $4 AND user_id = $5  
              RETURNING *`,
             [
-                name,
                 species,
-                breed,
+                breed || null ,
                 age,
                 req.params.id,
                 req.session.userId
@@ -119,6 +123,7 @@ petRoutes.put("/:id", requireLogin, async (req, res) => {
 
     } catch (err) {
         console.error(err);
+
         res.status(500).json({
             error: "Internal server error"
         });
