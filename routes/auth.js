@@ -8,11 +8,24 @@ const authRoutes = express.Router();
 // POST /api/auth/signup
 authRoutes.post("/signup", async (req, res) => {
     //gets the registration data sent from React
-    const { name, email, password } = req.body || {};
+    const {
+    name,
+    email,
+    phone,
+    petType,
+    petAge,
+    password
+} = req.body || {};
 
-    if (!name || !email || !password) {
+    if (!name ||
+        !email ||
+        !phone ||
+        !petType ||
+        petAge === undefined ||
+        petAge === "" ||
+        !password) {
         return res.status(400).json({
-            message: "Name, email, and password are required"
+            message: "All Fields are required"
     });
 }
 
@@ -33,11 +46,20 @@ authRoutes.post("/signup", async (req, res) => {
 
         // New accounts are always created as normal users so no one pretends to be an admin
         const result = await pgclient.query(
-            `INSERT INTO users (name, email, password, role)
-             VALUES ($1, $2, $3, $4)
-             RETURNING id, name, email, role`,
-            [name, email, hashedPassword, "user"]
+            `INSERT INTO users (name, email, phone, password, role)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, name, email, phone, role`,
+            [name, email, phone, hashedPassword, "user"]
         );
+
+        const newUser = result.rows[0];
+
+        await pgclient.query(
+            `INSERT INTO pets (species, age, user_id)
+            VALUES ($1, $2, $3)`,
+            [petType, petAge, newUser.id]
+        );
+
 
         res.status(201).json({
             message: "Account created successfully",
@@ -113,7 +135,7 @@ authRoutes.get("/me", async (req, res) => {
 
     try {
         const result = await pgclient.query(
-            "SELECT id, name, email, role FROM users WHERE id = $1",
+            "SELECT id, name, email, phone, role FROM users WHERE id = $1",
             [req.session.userId]
         );
 
@@ -121,8 +143,17 @@ authRoutes.get("/me", async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
+        const user = result.rows[0];
+
         res.status(200).json({
-            user: result.rows[0]
+            message: "Login successful",
+            user: {
+            id: user.id,
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                role: user.role
+            }
         });
 
     } catch (err) {

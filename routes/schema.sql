@@ -1,4 +1,117 @@
+-- =========================================
+-- PAWMELLE DATABASE SCHEMA
+-- PostgreSQL
+-- =========================================
 
+
+-- =========================================
+-- USERS TABLE
+-- =========================================
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+
+    name VARCHAR(100) NOT NULL,
+
+    email VARCHAR(150) UNIQUE NOT NULL,
+
+    password VARCHAR(255) NOT NULL,
+
+    phone VARCHAR(20),
+
+    role VARCHAR(20) NOT NULL DEFAULT 'user'
+        CHECK (role IN ('user', 'admin'))
+);
+
+
+-- =========================================
+-- SERVICES TABLE
+-- =========================================
+
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,
+
+    name VARCHAR(100) NOT NULL,
+
+    description TEXT NOT NULL,
+
+    price INTEGER NOT NULL
+        CHECK (price >= 0),
+
+    duration INTEGER NOT NULL
+        CHECK (duration > 0)
+);
+
+
+-- =========================================
+-- PETS TABLE
+-- =========================================
+
+CREATE TABLE pets (
+    id SERIAL PRIMARY KEY,
+
+    -- Name can initially be empty because signup
+    -- only asks for pet type and age
+    name VARCHAR(100),
+
+    species VARCHAR(100) NOT NULL,
+
+    breed VARCHAR(100),
+
+    age NUMERIC(4,1) NOT NULL
+        CHECK (age >= 0),
+
+    user_id INTEGER NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+
+-- =========================================
+-- APPOINTMENTS TABLE
+-- =========================================
+
+CREATE TABLE appointments (
+    id SERIAL PRIMARY KEY,
+
+    appointment_date DATE NOT NULL,
+
+    appointment_time TIME WITHOUT TIME ZONE NOT NULL,
+
+    status VARCHAR(20) NOT NULL DEFAULT 'pending'
+        CHECK (
+            status IN (
+                'pending',
+                'accepted',
+                'rejected',
+                'cancelled'
+            )
+        ),
+
+    user_id INTEGER NOT NULL,
+
+    pet_id INTEGER NOT NULL,
+
+    service_id INTEGER NOT NULL,
+
+    FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (pet_id)
+        REFERENCES pets(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    FOREIGN KEY (service_id)
+        REFERENCES services(id)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
 
 -- to insert the services data into the services table
 INSERT INTO services (name, description, price, duration)
@@ -53,7 +166,6 @@ VALUES
 );
 
 
-
 -- create admin account
 INSERT INTO users (name, email, password, role)
 VALUES (
@@ -62,3 +174,4 @@ VALUES (
     '$2b$10$b0kdCvpyFfWKuzwbYz7YYeHYs7m33U.90GYvgPSDCsDDJbTa5jt1W',
     'admin'
 );
+
